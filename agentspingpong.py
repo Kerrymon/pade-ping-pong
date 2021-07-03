@@ -54,37 +54,26 @@ sketch.write("Left_player : 0    Right_player: 0",
              align="center", font=("Courier", 24, "normal"))
 
 
-# Functions to move paddle vertically
-def paddleaup():
-    y = left_pad.ycor()
-    y += 20
-    left_pad.sety(y)
+class AgentLeftPlayer(Agent):
+
+    def __init__(self):
+        pass
+    
+    def paddrightup(self):
+        y = right_pad.ycor()
+        y += 20
+        right_pad.sety(y)
 
 
-def paddleadown():
-    y = left_pad.ycor()
-    y -= 20
-    left_pad.sety(y)
+class AgentRightPlayer(Agent):
 
+    def __init__(self):
+        pass
 
-def paddlebup():
-    y = right_pad.ycor()
-    y += 20
-    right_pad.sety(y)
-
-
-def paddlebdown():
-    y = right_pad.ycor()
-    y -= 20
-    right_pad.sety(y)
-
-
-# Keyboard bindings
-sc.listen()
-sc.onkeypress(paddleaup, "e")
-sc.onkeypress(paddleadown, "x")
-sc.onkeypress(paddlebup, "Up")
-sc.onkeypress(paddlebdown, "Down")
+    def paddrightup(self):
+        y = right_pad.ycor()
+        y += 20
+        right_pad.sety(y)
 
 while True:
     sc.update()
