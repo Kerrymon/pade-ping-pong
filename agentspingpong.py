@@ -6,20 +6,31 @@ from pade.acl.aid import AID
 from sys import argv
 from pade.behaviours.protocols import TimedBehaviour
 from pade.acl.messages import ACLMessage
-import random
 
 
 class ComportTemporal_Left(TimedBehaviour):
+
     def __init__(self, agent, time):
         super(ComportTemporal_Left, self).__init__(agent, time)
+
 
     def on_time(self):
         super(ComportTemporal_Left, self).on_time()
         display_message(self.agent.aid.localname, 'Двигаю левый щит')
+        self.dx_ball = hit_ball.dx
+        self.lp = left_pad.ycor()
+        self.b = hit_ball.ycor()
 
-        self.y = left_pad.ycor()
-        self.y += random.randint(-20, 20)
-        left_pad.sety(self.y)
+        if self.dx_ball < 0:
+            if self.b > self.lp:
+                self.lp += 5
+                left_pad.sety(self.lp)
+            elif self.b < self.lp:
+                self.lp -= 5
+                left_pad.sety(self.lp)
+            else:
+                pass
+
         sc.update()
 
 
@@ -28,24 +39,36 @@ class AgentLeftPlayer(Agent):
     def __init__(self, aid):
         super(AgentLeftPlayer, self).__init__(aid=aid, debug=True)
 
-        comp_temp_left = ComportTemporal_Left(self, 0.01)
+        comp_temp_left = ComportTemporal_Left(self, 0.001)
         self.behaviours.append(comp_temp_left)
 
-
+    def react(self, message):
+        display_message(self.aid.localname, 'Сообщение от агента шара достигло агента левого щита')
 
 
 
 class ComportTemporal_Right(TimedBehaviour):
+
     def __init__(self, agent, time):
         super(ComportTemporal_Right, self).__init__(agent, time)
+
 
     def on_time(self):
         super(ComportTemporal_Right, self).on_time()
         display_message(self.agent.aid.localname, 'Двигаю правый щит')
+        self.rp = right_pad.ycor()
+        self.b = hit_ball.ycor()
+        self.dx_ball = hit_ball.dx
 
-        self.y = right_pad.ycor()
-        self.y += random.randint(-20, 20)
-        right_pad.sety(self.y)
+        if self.dx_ball > 0:
+            if self.b > self.rp:
+                self.rp += 5
+                right_pad.sety(self.rp)
+            elif self.b < self.rp:
+                self.rp -= 5
+                right_pad.sety(self.rp)
+            else:
+                pass
         sc.update()
 
 
@@ -54,9 +77,11 @@ class AgentRightPlayer(Agent):
     def __init__(self, aid):
         super(AgentRightPlayer, self).__init__(aid=aid, debug=False)
 
-        comp_temp_right = ComportTemporal_Right(self, 0.01)
+        comp_temp_right = ComportTemporal_Right(self, 0.001)
         self.behaviours.append(comp_temp_right)
 
+    def react(self, message):
+        display_message(self.aid.localname, 'Сообщение от агента шара достигло агента правого щита')
 
 
 class ComportTemporal_Ball(TimedBehaviour):
@@ -67,7 +92,7 @@ class ComportTemporal_Ball(TimedBehaviour):
 
     def on_time(self):
         super(ComportTemporal_Ball, self).on_time()
-        display_message(self.agent.aid.localname, 'Двигаю шар')
+        display_message(self.agent.aid.localname,  "Двигаю шар")
 
 
         sc.update()
@@ -123,8 +148,24 @@ class AgentBall(Agent):
     def __init__(self, aid):
         super(AgentBall, self).__init__(aid=aid, debug=False)
 
-        comp_temp_ball = ComportTemporal_Ball(self, 0.01)
+        comp_temp_ball = ComportTemporal_Ball(self, 0.001)
         self.behaviours.append(comp_temp_ball)
+
+    def on_start(self):
+        super(AgentBall, self).on_start()
+        display_message(self.aid.localname, hit_ball.ycor)
+        call_later(0.1, self.sending_message)
+
+    def sending_message(self):
+        message = ACLMessage(ACLMessage.INFORM)
+        message.add_receiver(AID('AgentRightPlayer'))
+        message.add_receiver(AID('AgentLeftPlayer'))
+        message.set_content('Ola')
+        self.send(message)
+
+    def react(self, message):
+        super(AgentBall, self).react(message)
+        display_message(self.aid.localname, "Сообщение отправлено от {}".format(message.sender.name))
 
 
 
